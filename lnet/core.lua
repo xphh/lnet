@@ -1,7 +1,10 @@
 --
 -- Written by xphh 2015 with 'MIT License'
 --
-local lnet_openfunc = package.loadlib("lnet/core.dll", "luaopen_lnet")
+local lnet_openfunc, err = package.loadlib("lnet/core.dll", "luaopen_lnet")
+if not lnet_openfunc then
+	print(err)
+end
 local core = lnet_openfunc()
 
 local TcpSocket = {

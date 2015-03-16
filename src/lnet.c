@@ -14,6 +14,7 @@
 #include "src/poll.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 /************************************************************************/
 /* thread                                                               */
@@ -209,7 +210,6 @@ static int _control_poll(lua_State *L)
 	int bread = lua_toboolean(L, 3);
 	int bwrite = lua_toboolean(L, 4);
 	int inthread = lua_toboolean(L, 5);
-	int ret = 0;
 	event_t ev;
 	luaL_argcheck(L, check_poll(p), 1, "'poll' expected");
 	ev.fd = fd;

@@ -1,6 +1,8 @@
 /*
  *  Written by xphh 2015 with 'MIT License'
  */
+#ifdef WIN32
+
 #include "src/poll.h"
 #include <winsock2.h>
 
@@ -216,3 +218,5 @@ C_API void poll_event(poll_handle p, int id, event_t *ev)
 		ev->flag = 0;
 	}
 }
+
+#endif
