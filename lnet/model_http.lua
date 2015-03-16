@@ -2,6 +2,9 @@
 -- Written by xphh 2015 with 'MIT License'
 --
 
+-- version info
+lnet_version = "lnet-0.1.0"
+
 -- global http config
 config = {}
 
@@ -12,10 +15,8 @@ http = {
 }
 
 -- our http user-agent
-local user_agent = "Lua httpserver lnet-0.1.0"
-local resp_200 = {code = 200, desc = "OK", headers = {["User-Agent"] = user_agent}}
-local resp_404 = {code = 404, desc = "Not Found", headers = {["User-Agent"] = user_agent}}
-local resp_503 = {code = 503, desc = "Internal Error", headers = {["User-Agent"] = user_agent}}
+local user_agent = "Lua httpserver "..lnet_version
+local default_resp = {code = 200, desc = "OK", headers = {["User-Agent"] = user_agent}}
 
 local core = require "lnet.core"
 local Sync = core.sync
@@ -108,9 +109,27 @@ local function parse_chunked_content(data, begin)
 	end
 end
 
+local function resp_exit(code)
+	local desc = "Error"
+	if code == 200 then desc = "OK"
+	elseif code == 400 then desc = "Bad Request"
+	elseif code == 401 then desc = "Unauthorized"
+	elseif code == 403 then desc = "Forbidden"
+	elseif code == 404 then desc = "Not Found"
+	elseif code == 500 then desc = "Internal Error"
+	end
+	http.resp.code = code
+	http.resp.desc = desc
+	if 400 <= code and code < 600 then
+		http.resp.headers["Content-Type"] = "text/html"
+		http.resp.content = '<h1 align="center">'..http.resp.code..' '..http.resp.desc..'</h1><hr/><p align="center">'..lnet_version..'</p>'
+	end
+end
+
 -- start
 require "lnet.model_http.config"
 http.err = log_error
+http.exit = resp_exit
 sethandler()
 log_info("worker init")
 if not config.code_cache then
@@ -192,22 +211,22 @@ local model = {
 	end,
 	
 	handle = function (req, peer)
+		log_access(req, peer)
 		http.peer = peer
 		http.req = req
-		log_access()
-		http.resp = resp_200
+		http.resp = default_resp
 		local handler, err = gethandler(req.uri)
 		if handler == nil then
-			http.resp = resp_404
 			log_error(err)
+			resp_exit(500)
 		else
 			env = {}
 			setmetatable(env, {__index = _G})
 			setfenv(1, env)
 			local ret, err = pcall(handler)
 			if not ret then
-				http.resp = resp_503
 				log_error(err)
+				resp_exit(500)
 			end
 		end
 		local resp = http.resp
