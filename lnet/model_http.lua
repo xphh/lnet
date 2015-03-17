@@ -110,52 +110,51 @@ if not config.code_cache then
 end
 
 local model = {
+	-- session timeout time (sec)
+	timeout = config.keep_alive or 0,
+	-- max http size limit
+	size_limit = config.http_size_limit	or 0,
+}
 
-	timeout = function ()
-		return config.keep_alive
-	end,
-	
-	-- return (parsed, err, respbuf)
-	input = function (data, peer)
-		-- parse http request
-		local parsed, err, req = proto.parse(data)
-		if parsed < 0 then
-			log_error(err, req, peer)
-			return -1, err
-		elseif parsed == 0 then
-			return 0
-		end
-		-- handle http request
-		log_access(req, peer)
-		http.peer = peer
-		http.req = req
-		http.resp = default_resp
-		local handler, err = gethandler(req.uri)
-		if handler == nil then
+-- return (parsed, err, respbuf)
+function model.input(data, peer)
+	-- parse http request
+	local parsed, err, req = proto.parse(data)
+	if parsed < 0 then
+		log_error(err, req, peer)
+		return -1, err
+	elseif parsed == 0 then
+		return 0
+	end
+	-- handle http request
+	log_access(req, peer)
+	http.peer = peer
+	http.req = req
+	http.resp = default_resp
+	local handler, err = gethandler(req.uri)
+	if handler == nil then
+		log_error(err)
+		resp_exit(500)
+	else
+		env = {}
+		setmetatable(env, {__index = _G})
+		setfenv(1, env)
+		local ret, err = pcall(handler)
+		if not ret then
 			log_error(err)
 			resp_exit(500)
-		else
-			env = {}
-			setmetatable(env, {__index = _G})
-			setfenv(1, env)
-			local ret, err = pcall(handler)
-			if not ret then
-				log_error(err)
-				resp_exit(500)
-			end
 		end
-		-- generate http response
-		http.resp.protocol = http.req.protocol
-		if config.chunked_mode then
-			http.resp.headers["Transfer-Encoding"] = "chunked"
-		end
-		local respbuf, err = proto.generate(http.resp)
-		if respbuf == nil then
-			log_error(err, req, peer)
-		end
-		return parsed, nil, respbuf
-	end,
-	
-}
+	end
+	-- generate http response
+	http.resp.protocol = http.req.protocol
+	if config.chunked_mode then
+		http.resp.headers["Transfer-Encoding"] = "chunked"
+	end
+	local respbuf, err = proto.generate(http.resp)
+	if respbuf == nil then
+		log_error(err, req, peer)
+	end
+	return parsed, nil, respbuf
+end
 
 return model

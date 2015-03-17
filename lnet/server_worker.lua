@@ -17,8 +17,8 @@ local Client = {}
 function Client:new(fd)
 	local o = {
 		tcp = TcpSocket:new(fd),
-		sndbuf = nil,
-		rcvbuf = nil,
+		sndbuf = "",
+		rcvbuf = "",
 		timestamp = 0
 	}
 	setmetatable(o, self)
@@ -29,11 +29,7 @@ end
 function Client:recv()
 	local rcvlen, data, peer_ip, peer_port = self.tcp:recv(8000)
 	if rcvlen > 0 then
-		if self.rcvbuf == nil then
-			self.rcvbuf = data
-		else
-			self.rcvbuf = self.rcvbuf..data
-		end
+		self.rcvbuf = self.rcvbuf..data
 		self.timestamp = os.clock()
 		return true, {ip = peer_ip, port = peer_port}
 	end
@@ -44,29 +40,23 @@ function Client:consume(length)
 	if length < #self.rcvbuf then
 		self.rcvbuf = string.sub(self.rcvbuf, length + 1)
 	else
-		self.rcvbuf = nil
+		self.rcvbuf = ""
 	end
 end
 
 function Client:send(data)
 	if data ~= nil then
-		if self.sndbuf == nil then
-			self.sndbuf = data
-		else
-			self.sndbuf = self.sndbuf..data
-		end
+		self.sndbuf = self.sndbuf..data
 	end
-	if self.sndbuf ~= nil then
-		local sndlen = self.tcp:send(self.sndbuf)
-		if sndlen == #self.sndbuf then
-			self.sndbuf = nil
-			p:control(self.tcp.fd, true, false, true)
-		elseif 0 <= sndlen and sndlen < #self.sndbuf then
-			self.sndbuf = string.sub(self.sndbuf, sndlen + 1)
-			p:control(self.tcp.fd, true, true, true)
-		elseif sndlen < 0 then
-			return false
-		end
+	local sndlen = self.tcp:send(self.sndbuf)
+	if sndlen == #self.sndbuf then
+		self.sndbuf = ""
+		p:control(self.tcp.fd, true, false, true)
+	elseif 0 <= sndlen and sndlen < #self.sndbuf then
+		self.sndbuf = string.sub(self.sndbuf, sndlen + 1)
+		p:control(self.tcp.fd, true, true, true)
+	elseif sndlen < 0 then
+		return false
 	end
 	return true
 end
@@ -93,7 +83,7 @@ end
 local last_check_time = os.clock()
 local function checkclients()
 	local now = os.clock()
-	local timeout = model.timeout()
+	local timeout = model.timeout
 	if (now - last_check_time >= 1) and (timeout > 0) then
 		for k in pairs(CLIENTS) do
 			if now - CLIENTS[k].timestamp >= timeout then
@@ -113,6 +103,8 @@ while true do
 				local client = getclient(fd)
 				local ret, peer = client:recv()
 				if not ret then
+					rmvclient(fd)
+				elseif model.size_limit > 0 and #client.rcvbuf > model.size_limit then
 					rmvclient(fd)
 				else
 					local parsed, err, respbuf = model.input(client.rcvbuf, peer)

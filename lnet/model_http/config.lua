@@ -4,8 +4,8 @@ config.keep_alive = 65
 -- http transfer encoding use chunked mode
 config.chunked_mode = false
 
--- maximum http content length allowed
-config.content_length_allowed = 1024*1024
+-- maximum http packet size limit
+config.http_size_limit = 1024*1024
 
 -- code cache on/off
 config.code_cache = true
