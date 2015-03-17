@@ -115,14 +115,13 @@ while true do
 				if not ret then
 					rmvclient(fd)
 				else
-					local parselen, req = model.parse(client.rcvbuf, peer)
-					if parselen > 0 then
-						client:consume(parselen)
-						local respbuf = model.handle(req, peer)
+					local parsed, err, respbuf = model.input(client.rcvbuf, peer)
+					if parsed > 0 then
+						client:consume(parsed)
 						if respbuf ~= nil and #respbuf > 0 then
 							client:send(respbuf)
 						end
-					elseif parselen < 0 then
+					elseif parsed < 0 then
 						rmvclient(fd)
 					end
 				end 
