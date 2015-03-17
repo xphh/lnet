@@ -2,7 +2,7 @@
 -- Written by xphh 2015 with 'MIT License'
 --
 local core = require "lnet.core"
-local TcpSocket = core.tcp
+local Socket = core.socket
 local Poll = core.poll
 
 local tid = _G["_THREADID"]
@@ -16,7 +16,7 @@ local Client = {}
 
 function Client:new(fd)
 	local o = {
-		tcp = TcpSocket:new(fd),
+		tcp = Socket:new(fd),
 		sndbuf = "",
 		rcvbuf = "",
 		timestamp = 0

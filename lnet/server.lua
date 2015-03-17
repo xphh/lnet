@@ -2,7 +2,7 @@
 -- Written by xphh 2015 with 'MIT License'
 --
 local core = require "lnet.core"
-local TcpSocket = core.tcp
+local Socket = core.socket
 local Poll = core.poll
 
 local Server = {
@@ -13,7 +13,7 @@ local Server = {
 
 function Server:new(params)
 	local o = Server
-	o.listener, err = TcpSocket:open(params.ip, params.port)
+	o.listener, err = Socket:tcp(params.ip, params.port)
 	if not o.listener then
 		print("server create listener fail: "..err)
 		return nil

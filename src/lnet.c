@@ -91,6 +91,23 @@ static int _tcp(lua_State *L)
 	return 2;
 }
 
+static int _udp(lua_State *L)
+{
+	const char *ip = NULL;
+	int port = 0;
+	int fd;
+	int count = lua_gettop(L);
+	if (count == 2)
+	{
+		ip = luaL_checkstring(L, 1);
+		port = (int)luaL_checkinteger(L, 2);
+	}
+	fd = socket_udp(ip, port);
+	lua_pushinteger(L, fd);
+	lua_pushstring(L, socket_error());
+	return 2;
+}
+
 static int _close(lua_State *L)
 {
 	int fd = (int)luaL_checkinteger(L, 1);
@@ -306,6 +323,7 @@ static luaL_reg lnetlib[] = {
 	{"enter_sync", _enter_sync},
 	{"leave_sync", _leave_sync},
 	{"tcp", _tcp},
+	{"udp", _udp},
 	{"close", _close},
 	{"listen", _listen},
 	{"accept", _accept},

@@ -7,18 +7,18 @@ if not lnet_openfunc then
 end
 local core = lnet_openfunc()
 
-local TcpSocket = {
+local Socket = {
 	fd = -1,
 }
 
-function TcpSocket:new(fd)
+function Socket:new(fd)
 	local o = {fd = fd}
 	setmetatable(o, self)
 	self.__index = self
 	return o
 end
 
-function TcpSocket:open(ip, port)
+function Socket:tcp(ip, port)
 	local fd, err
 	if ip == nil then
 		fd, err = core.tcp()
@@ -28,26 +28,39 @@ function TcpSocket:open(ip, port)
 	if fd == -1 then
 		return nil, err
 	end
-	return TcpSocket:new(fd)
+	return Socket:new(fd)
 end
 
-function TcpSocket:close()
+function Socket:udp(ip, port)
+	local fd, err
+	if ip == nil then
+		fd, err = core.udp()
+	else
+		fd, err = core.udp(ip, port)
+	end
+	if fd == -1 then
+		return nil, err
+	end
+	return Socket:new(fd)
+end
+
+function Socket:close()
 	return core.close(self.fd)
 end
 
-function TcpSocket:listen()
+function Socket:listen()
 	return core.listen(self.fd)
 end
 
-function TcpSocket:accept()
+function Socket:accept()
 	return core.accept(self.fd)
 end
 
-function TcpSocket:connect(ip, port)
+function Socket:connect(ip, port)
 	return core.connect(self.fd, ip, port)
 end
 
-function TcpSocket:send(data, ip, port)
+function Socket:send(data, ip, port)
 	if ip == nil then
 		return core.send(self.fd, data)
 	else
@@ -55,11 +68,11 @@ function TcpSocket:send(data, ip, port)
 	end
 end
 
-function TcpSocket:recv(size)
+function Socket:recv(size)
 	return core.recv(self.fd, size)
 end
 
-function TcpSocket:wait(bread, bwrite, timeout)
+function Socket:wait(bread, bwrite, timeout)
 	return core.wait(self.fd, bread, bwrite, timeout)
 end
 
@@ -100,7 +113,7 @@ function Poll:thread(filename, id, ctxstring)
 end
 
 return {
-	tcp = TcpSocket,
+	socket = Socket,
 	poll = Poll,
 	sync = {
 		enter = core.enter_sync,
