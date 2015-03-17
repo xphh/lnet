@@ -1,3 +1,6 @@
+--
+-- Written by xphh 2015 with 'MIT License'
+--
 local core = require "lnet.core"
 local TcpSocket = core.tcp
 local Poll = core.poll
@@ -79,9 +82,6 @@ local function getclient(fd)
 	end
 	return CLIENTS[fd]
 end
---
--- Written by xphh 2015 with 'MIT License'
---
 
 local function rmvclient(fd)
 	if CLIENTS[fd] ~= nil then
@@ -91,7 +91,7 @@ local function rmvclient(fd)
 end
 
 local last_check_time = os.clock()
-local function checkclient()
+local function checkclients()
 	local now = os.clock()
 	local timeout = model.timeout()
 	if (now - last_check_time >= 1) and (timeout > 0) then
@@ -136,5 +136,5 @@ while true do
 			end
 		end
 	end
-	checkclient()
+	checkclients()
 end

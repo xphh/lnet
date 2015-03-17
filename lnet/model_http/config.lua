@@ -19,6 +19,8 @@ config.logs_dir = "lnet/model_http/logs"
 config.logs_date_format = "%Y-%m-%d %H:%M:%S"
 config.access_log = io.open(config.logs_dir.."/access.log", "a")
 config.error_log = io.open(config.logs_dir.."/error.log", "a")
+assert(config.access_log, "open access logfile fail")
+assert(config.error_log, "open error logfile fail")
 
 -- default http handler(lua file) dir
 config.http_handler_dir = "lnet/model_http"
