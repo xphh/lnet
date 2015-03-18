@@ -2,7 +2,7 @@
 Now webpage supported!
 
 1. static web pages: custom root directory, default pages, mime types, and etc.
-2. dynamic web pages: Lua code embedded in html, see 'lnet/model_http/root/index.lua for example.
+2. dynamic web pages: Lua code embedded in html, see 'lnet/model_http/root/index.lua' for example.
 
 So far, the Lua APIs for webpage and handler:
 
@@ -20,7 +20,7 @@ http.req.uri
 
 http.req.uri_path
 
-http.req.args[key] = value
+http.req.uri_args[key] = value
 
 http.req.headers[header] = info
 
