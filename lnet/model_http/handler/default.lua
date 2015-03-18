@@ -11,7 +11,7 @@ if f == nil then
 end
 
 local ext = ""
-local pos = string.find(req.uri_path, ".")
+local pos = string.find(req.uri_path, "%.")
 if pos ~= nil then
 	ext = string.sub(req.uri_path, pos + 1)
 end
