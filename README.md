@@ -34,6 +34,8 @@ http.resp.desc
 
 http.resp.headers[header] = info
 
+http.resp.content
+
 http:exit(code, err)
 
 # lnet
