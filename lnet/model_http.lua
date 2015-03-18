@@ -82,7 +82,7 @@ local function gethandler(uri)
 	end
 end
 
-local function resp_exit(code)
+local function resp_exit(code, err)
 	local desc = "Error"
 	if code == 200 then desc = "OK"
 	elseif code == 400 then desc = "Bad Request"
@@ -93,9 +93,14 @@ local function resp_exit(code)
 	end
 	http.resp.code = code
 	http.resp.desc = desc
-	if 400 <= code and code < 600 then
-		http.resp.headers["Content-Type"] = "text/html"
-		http.resp.content = '<h1 align="center">'..http.resp.code..' '..http.resp.desc..'</h1><hr/><p align="center">'..lnet_version..'</p>'
+	if config.output_error and (err ~= nil) then
+		http.resp.headers["Content-Type"] = "text/plain"
+		http.resp.content = "server internal error: "..err
+	else
+		if 400 <= code and code < 600 then
+			http.resp.headers["Content-Type"] = "text/html"
+			http.resp.content = '<h1 align="center">'..http.resp.code..' '..http.resp.desc..'</h1><hr/><p align="center">'..lnet_version..'</p>'
+		end
 	end
 end
 
@@ -134,7 +139,7 @@ function model.input(data, peer)
 	local handler, err = gethandler(req.uri)
 	if handler == nil then
 		log_error(err)
-		resp_exit(500)
+		resp_exit(500, err)
 	else
 		env = {}
 		setmetatable(env, {__index = _G})
@@ -142,7 +147,7 @@ function model.input(data, peer)
 		local ret, err = pcall(handler)
 		if not ret then
 			log_error(err)
-			resp_exit(500)
+			resp_exit(500, err)
 		end
 	end
 	-- generate http response

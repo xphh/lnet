@@ -9,6 +9,23 @@ local function getline(data, begin)
 	end
 end
 
+local function split(str, div)
+	local arr = {}
+	local begin = 1
+	local i = 1
+	while true do
+		local pos = string.find(str, div, begin)
+		if pos == nil then
+			arr[i] = string.sub(str, begin)
+			break
+		end
+		arr[i] = string.sub(str, begin, pos - 1)
+		begin = pos + 1
+		i = i + 1
+	end
+	return arr
+end
+
 local function parse_headline(data, begin)
 	local line, begin = getline(data, begin)
 	if line == nil then
@@ -22,6 +39,22 @@ local function parse_headline(data, begin)
 		return -1, "http version "..protocol.." unsupported"
 	end
 	return begin, nil, line, method, uri, protocol
+end
+
+local function parse_uri(uri)
+	local arr = split(uri, "?")
+	local path = arr[1]
+	local argsline = arr[2]
+	if argsline == nil then
+		return path, {}
+	end
+	local args = {}
+	arr = split(argsline, "&")
+	for i, v in ipairs(arr) do
+		arr = split(v, "=")
+		args[arr[1]] = arr[2]
+	end
+	return path, args
 end
 
 local function parse_statusline(data, begin)
@@ -96,6 +129,7 @@ local function http_parse(data, full)
 	elseif begin == 0 then
 		return 0
 	end
+	req.uri_path, req.uri_args = parse_uri(req.uri)
 	-- if full, parse response status line
 	if full ~= nil then
 		begin, err, req.statusline, req.protocol, req.code, req.desc = parse_statusline(data, begin)
