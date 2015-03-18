@@ -2,6 +2,10 @@
 -- Written by xphh 2015 with 'MIT License'
 --
 
+-- http server version info and user agent
+config.version_info = "lnet-0.1.0"
+config.user_agent = "Lua httpserver "..config.version_info
+
 -- http session keep-alive time (sec)
 config.keep_alive = 65
 

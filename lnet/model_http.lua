@@ -2,21 +2,9 @@
 -- Written by xphh 2015 with 'MIT License'
 --
 
--- version info
-lnet_version = "lnet-0.1.0"
-
 -- global http config
 config = {}
-
--- global http packet object
-http = {
-	req = {}, 
-	resp = {},
-}
-
--- our http user-agent
-local user_agent = "Lua httpserver "..lnet_version
-local default_resp = {code = 200, desc = "OK", headers = {["User-Agent"] = user_agent}}
+require "lnet.model_http.config"
 
 local core = require "lnet.core"
 local Sync = core.sync
@@ -28,8 +16,6 @@ local function datestr()
 end
 
 local function log_access(req, peer)
-	req = req or http.req
-	peer = peer or http.peer
 	local ua = req.headers["user-agent"] or ""
 	local msg = datestr().." - "..peer.ip..":"..peer.port.." - "..req.headline.." - User-Agent["..ua.."]"
 	Sync.enter()
@@ -47,16 +33,16 @@ local function log_info(info)
 end
 
 local function log_error(err, req, peer)
-	req = req or http.req
-	req.headline = req.headline or ""
-	peer = peer or http.peer
-	local msg = datestr().." - "..peer.ip..":"..peer.port.." - "..req.headline.." - "..err
+	local headline = req.headline or ""
+	local msg = datestr().." - "..peer.ip..":"..peer.port.." - "..headline.." - "..err
 	Sync.enter()
 	config.error_log:write(msg.."\r\n")
 	config.error_log:flush()
 	Sync.leave()
 end
 
+-- set handler array
+-- we map the longest regexp
 local urireg = {}
 local mapping = {}
 
@@ -82,7 +68,19 @@ local function gethandler(uri)
 	end
 end
 
-local function resp_exit(code, err)
+-- set handler self environment and run
+-- return http with http.resp filled
+local function dohandler(handler, http)
+	local env = {}
+	_G.http = http
+	setmetatable(env, {__index = _G})
+	setfenv(handler, env)
+	local ret, err = pcall(handler)
+	return ret, err, getfenv(handler).http
+end
+
+-- set default http error output
+local function set_http_error(http, code, err)
 	local desc = "Error"
 	if code == 200 then desc = "OK"
 	elseif code == 400 then desc = "Bad Request"
@@ -99,15 +97,14 @@ local function resp_exit(code, err)
 	else
 		if 400 <= code and code < 600 then
 			http.resp.headers["Content-Type"] = "text/html"
-			http.resp.content = '<h1 align="center">'..http.resp.code..' '..http.resp.desc..'</h1><hr/><p align="center">'..lnet_version..'</p>'
+			http.resp.content = '<h1 align="center">'..http.resp.code..' '..http.resp.desc..'</h1><hr/><p align="center">'..config.version_info..'</p>'
 		end
 	end
 end
 
--- start
-require "lnet.model_http.config"
-http.err = log_error
-http.exit = resp_exit
+--
+-- chunk start here
+--
 sethandler()
 log_info("worker init")
 if not config.code_cache then
@@ -131,23 +128,24 @@ function model.input(data, peer)
 	elseif parsed == 0 then
 		return 0
 	end
-	-- handle http request
 	log_access(req, peer)
-	http.peer = peer
-	http.req = req
-	http.resp = default_resp
+	-- http object
+	local http = {
+		peer = peer,
+		req = req,
+		resp = {code = 200, desc = "OK", headers = {["User-Agent"] = config.user_agent}},
+		exit = set_http_error,
+	}
+	-- handle http
 	local handler, err = gethandler(req.uri)
 	if handler == nil then
-		log_error(err)
-		resp_exit(500, err)
+		log_error(err, req, peer)
+		set_http_error(http, 500, err)
 	else
-		env = {}
-		setmetatable(env, {__index = _G})
-		setfenv(1, env)
-		local ret, err = pcall(handler)
-		if not ret then
-			log_error(err)
-			resp_exit(500, err)
+		local ret, err, http = dohandler(handler, http)
+		if err ~= nil then
+			log_error(err, req, peer)
+			set_http_error(http, 500, err)
 		end
 	end
 	-- generate http response

@@ -2,6 +2,19 @@
 -- Written by xphh 2015 with 'MIT License'
 --
 
+-- add 'echo' function and do chunk safe
+local env = {}
+local function dochunk(chunk)
+	local output = ""
+	-- set global echo function
+	_G.echo = function (msg) output = output..msg end 
+	setmetatable(env, {__index = _G})
+	setfenv(chunk, env)
+	chunk()
+	env = getfenv(chunk)
+	return output
+end
+
 -- It works, but too simple to use.
 return function (source)
 	local out = ""
@@ -22,8 +35,7 @@ return function (source)
 		if chunk == nil then
 			return nil, err
 		end
-		local res = chunk() or ""
-		out = out..html..res
+		out = out..html..dochunk(chunk)
 		begin = p2 + 2
 	end
 	return out

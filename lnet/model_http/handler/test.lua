@@ -19,7 +19,7 @@ info = info.."HTTP Request URI = "..req.uri.."\n"
 info = info.."HTTP Request URI Path = "..req.uri_path.."\n"
 info = info.."HTTP Request URI Args = "..uri_args.."\n"
 info = info.."HTTP Request Headers:\n"..headers.."\n"
-if http.req.content ~= nil then
+if req.content ~= nil then
 	info = info.."HTTP Request Content:\n"..req.content.."\n"
 end
 

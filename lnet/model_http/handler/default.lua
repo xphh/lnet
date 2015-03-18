@@ -25,7 +25,7 @@ else
 end
 
 if f == nil then
-	http.exit(404)
+	http:exit(404)
 	return
 end
 
@@ -41,13 +41,10 @@ end
 if ext == "lua" and interpret ~= nil then
 	source, err = interpret(source)
 	if source == nil then
-		http.exit(503, "while interpret '"..page.."': "..err)
+		http:exit(503, "while interpret '"..page.."': "..err)
 		return
 	end
 end
 
-http.resp.code = 200
-http.resp.desc = "OK"
 http.resp.headers["Content-Type"] = config.mime_types[ext] or "application/octet-stream"
 http.resp.content = source
-
