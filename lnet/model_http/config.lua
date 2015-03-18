@@ -32,6 +32,15 @@ assert(config.error_log, "open error logfile fail")
 -- web pages root directory
 config.webpage_root = "lnet/model_http/root"
 
+-- default page names
+config.default_page = {
+	"index.htm",
+	"index.html",
+	"default.htm",
+	"default.html",
+	-- add more here
+}
+
 -- default http handler(lua file) dir
 config.http_handler_dir = "lnet/model_http/handler"
 
