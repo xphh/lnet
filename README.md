@@ -24,6 +24,8 @@ http.req.uri_args[key] = value
 
 http.req.headers[header] = info
 
+http.req.content
+
 http.resp.statusline
 
 http.resp.protocol
