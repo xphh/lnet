@@ -117,6 +117,7 @@ C_API int socket_tcp(const char *ip, int port)
 		int on = 1;
 		ioctl(fd, FIONBIO, &on);
 		setsockopt(fd, SOL_SOCKET, SO_KEEPALIVE, (char*)&on, sizeof(on));
+		setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char*)&on, sizeof(on));
 	}
 
 	if (ip && socket_bind(fd, ip, port) < 0)

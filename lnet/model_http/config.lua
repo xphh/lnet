@@ -33,7 +33,7 @@ assert(config.error_log, "open error logfile fail")
 config.webpage_root = "lnet/model_http/root"
 
 -- default http handler(lua file) dir
-config.http_handler_dir = "lnet/model_http"
+config.http_handler_dir = "lnet/model_http/handler"
 
 -- URI mapping
 -- key: the URI regexp
@@ -44,7 +44,7 @@ config.uri_mapping = {
 	},
 	
 	["^/test"] = {
-		handler = "root/test.lua"
+		handler = "test.lua"
 	},
 	
 }
