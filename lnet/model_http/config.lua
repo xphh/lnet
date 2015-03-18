@@ -36,10 +36,12 @@ config.webpage_root = "lnet/model_http/root"
 config.default_page = {
 	"index.htm",
 	"index.html",
-	"default.htm",
-	"default.html",
+	"index.lua",
 	-- add more here
 }
+
+-- Lua interpreter on/off (Lua code embedded in html)
+config.load_interpreter = true
 
 -- default http handler(lua file) dir
 config.http_handler_dir = "lnet/model_http/handler"

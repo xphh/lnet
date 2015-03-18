@@ -5,6 +5,7 @@
 -- mime types
 config.mime_types = {
 
+	lua			= "text/html",
 	html		= "text/html",
 	htm			= "text/html",
 	shtml		= "text/html",

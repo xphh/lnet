@@ -5,6 +5,8 @@
 <body>
 <h1>Welcome to Lua HttpServer</h1>
 <hr>
-lnet/0.1.0 <a href="https://github.com/xphh/lnet">[github]</a>
+<? return lnet_version ?>
+<a href="https://github.com/xphh/lnet">[github]</a>
+<? return os.date(config.logs_date_format) ?>
 </body>
 </html>
