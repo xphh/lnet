@@ -2,16 +2,11 @@
 -- Written by xphh 2015 with 'MIT License'
 --
 
--- add 'echo' function and do chunk safe
-local env = {}
 local function dochunk(chunk)
 	local output = ""
 	-- set global echo function
 	_G.echo = function (msg) output = output..msg end 
-	setmetatable(env, {__index = _G})
-	setfenv(chunk, env)
 	chunk()
-	env = getfenv(chunk)
 	return output
 end
 

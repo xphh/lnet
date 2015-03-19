@@ -68,15 +68,21 @@ local function gethandler(uri)
 	end
 end
 
--- set handler self environment and run
+-- sandbox in a new enviroment
+-- set http to globals
+local function sandbox(handler)
+	_G.http = http
+	local ret, err = pcall(handler)
+	return ret, err, http
+end
+
+-- create a sandbox
 -- return http with http.resp filled
 local function dohandler(handler, http)
-	local env = {}
-	_G.http = http
+	local env = {http = http}
 	setmetatable(env, {__index = _G})
-	setfenv(handler, env)
-	local ret, err = pcall(handler)
-	return ret, err, getfenv(handler).http
+	setfenv(sandbox, env)
+	return sandbox(handler)
 end
 
 -- set default http error output
