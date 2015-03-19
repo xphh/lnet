@@ -2,43 +2,28 @@
 Now webpage supported!
 
 1. static web pages: custom root directory, default pages, mime types, and etc.
-2. dynamic web pages: Lua code embedded in html, see 'lnet/model_http/root/index.lua' for example.
+2. dynamic web pages: Lua code embedded in html (very similar to PHP), see 'lnet/model_http/root/index.lua' for example.
 
 So far, the Lua APIs for webpage and handler:
 
-http.peer.ip
-
-http.peer.port
-
-http.req.headline
-
-http.req.protocol
-
-http.req.method
-
-http.req.uri
-
-http.req.uri_path
-
-http.req.uri_args[key] = value
-
-http.req.headers[header] = info
-
-http.req.content
-
-http.resp.statusline
-
-http.resp.protocol
-
-http.resp.code
-
-http.resp.desc
-
-http.resp.headers[header] = info
-
-http.resp.content
-
-http:exit(code, err)
+- echo (output messages into html, like php)
+- http.peer.ip
+- http.peer.port
+- http.req.headline
+- http.req.protocol
+- http.req.method
+- http.req.uri
+- http.req.uri_path
+- http.req.uri_args[key] = value
+- http.req.headers[header] = info
+- http.req.content
+- http.resp.statusline
+- http.resp.protocol
+- http.resp.code
+- http.resp.desc
+- http.resp.headers[header] = info
+- http.resp.content
+- http:exit(code, err)
 
 # lnet
 This new toy is for those people who believe in that Lua can do everything, including httpserver.
