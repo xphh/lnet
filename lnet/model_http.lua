@@ -72,8 +72,8 @@ end
 -- set http to globals
 local function sandbox(handler)
 	_G.http = http
-	local ret, err = pcall(handler)
-	return ret, err, http
+	local res, err = pcall(handler)
+	return res, err, http
 end
 
 -- create a sandbox
@@ -148,8 +148,8 @@ function model.input(data, peer)
 		log_error(err, req, peer)
 		set_http_error(http, 500, err)
 	else
-		local ret, err, http = dohandler(handler, http)
-		if err ~= nil then
+		local res, err, http = dohandler(handler, http)
+		if not res then
 			log_error(err, req, peer)
 			set_http_error(http, 500, err)
 		end
