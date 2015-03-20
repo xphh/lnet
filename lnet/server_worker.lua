@@ -94,36 +94,49 @@ local function checkclients()
 	end
 end
 
+local function handle_event(fd, bread, bwrite)
+	if bread then
+		local client = getclient(fd)
+		local sendfunc = function (data) client:send(data) end
+		local ret, peer = client:recv()
+		if not ret then
+			rmvclient(fd)
+		elseif model.size_limit > 0 and #client.rcvbuf > model.size_limit then
+			rmvclient(fd)
+		else
+			local parsed, err = model.input(client.rcvbuf, peer, sendfunc)
+			if parsed > 0 then
+				client:consume(parsed)
+			elseif parsed < 0 then
+				rmvclient(fd)
+			end
+		end 
+	end
+	if bwrite then
+		local client = getclient(fd)
+		local ret = client:send()
+		if not ret then
+			rmvclient(fd)
+		end
+	end
+end
+
+local CoSocket = require "lnet.cosocket"
+
+--
+-- main loop
+--
 while true do
-	local n = p:poll(-1)
+	local to = CoSocket.getnext()
+	local n = p:poll(to * 1000)
 	if n > 0 then
 		for i = 1, n do
 			local fd, bread, bwrite = p:event(i)
-			if bread then
-				local client = getclient(fd)
-				local ret, peer = client:recv()
-				if not ret then
-					rmvclient(fd)
-				elseif model.size_limit > 0 and #client.rcvbuf > model.size_limit then
-					rmvclient(fd)
-				else
-					local parsed, err, respbuf = model.input(client.rcvbuf, peer)
-					if parsed > 0 then
-						client:consume(parsed)
-						if respbuf ~= nil and #respbuf > 0 then
-							client:send(respbuf)
-						end
-					elseif parsed < 0 then
-						rmvclient(fd)
-					end
-				end 
-			end
-			if bwrite then
-				local client = getclient(fd)
-				local ret = client:send()
-				if not ret then
-					rmvclient(fd)
-				end
+			local co = CoSocket.getco(fd)
+			if co == nil then
+				handle_event(fd, bread, bwrite)
+			else
+				coroutine.resume(co)
 			end
 		end
 	end

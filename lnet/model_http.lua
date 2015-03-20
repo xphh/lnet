@@ -67,23 +67,6 @@ local function gethandler(uri)
 	end
 end
 
--- sandbox in a new enviroment
--- set http to globals
-local function sandbox(handler)
-	_G.http = http
-	local res, err = pcall(handler)
-	return res, err, http
-end
-
--- create a sandbox
--- return http with http.resp filled
-local function dohandler(handler, http)
-	local env = {http = http}
-	setmetatable(env, {__index = _G})
-	setfenv(sandbox, env)
-	return sandbox(handler)
-end
-
 -- set default http error output
 local function set_http_error(http, code, err)
 	local desc = "Error"
@@ -107,6 +90,31 @@ local function set_http_error(http, code, err)
 	end
 end
 
+-- generate http response and send out
+local function http_response(http, sendfunc)
+	http.resp.protocol = http.req.protocol
+	if config.chunked_mode then
+		http.resp.headers["Transfer-Encoding"] = "chunked"
+	end
+	local respbuf, err = proto.generate(http.resp)
+	if respbuf == nil then
+		log_error(err, req, peer)
+	else
+		sendfunc(respbuf)
+	end
+end
+
+-- create a sandbox to do handler
+local function sandbox(handler, http, sendfunc)
+	local env = {http = http}
+	setmetatable(env, {__index = _G})
+	setfenv(1, env)
+	-- set http to globals for handler
+	_G.http = http
+	handler()
+	http_response(http, sendfunc)
+end
+
 --
 -- chunk start here
 --
@@ -123,8 +131,8 @@ local model = {
 	size_limit = config.http_size_limit	or 0,
 }
 
--- return (parsed, err, respbuf)
-function model.input(data, peer)
+-- return (parsed, err)
+function model.input(data, peer, sendfunc)
 	-- parse http request
 	local parsed, err, req = proto.parse(data)
 	if parsed < 0 then
@@ -146,23 +154,19 @@ function model.input(data, peer)
 	if handler == nil then
 		log_error(err, req, peer)
 		set_http_error(http, 500, err)
+		http_response(http, sendfunc)
 	else
-		local res, err, http = dohandler(handler, http)
+		-- create coroutine first
+		local safectx = function () coroutine.wrap(sandbox)(handler, http, sendfunc) end
+		-- then use pcall
+		local res, err = pcall(safectx)
 		if not res then
 			log_error(err, req, peer)
 			set_http_error(http, 500, err)
+			http_response(http, sendfunc)
 		end
 	end
-	-- generate http response
-	http.resp.protocol = http.req.protocol
-	if config.chunked_mode then
-		http.resp.headers["Transfer-Encoding"] = "chunked"
-	end
-	local respbuf, err = proto.generate(http.resp)
-	if respbuf == nil then
-		log_error(err, req, peer)
-	end
-	return parsed, nil, respbuf
+	return parsed
 end
 
 return model
