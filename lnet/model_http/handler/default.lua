@@ -6,6 +6,16 @@ local req = http.req
 local f = nil
 local page = req.uri_path
 
+-- check whether uri start with '/'
+local first = string.sub(page, 1, 1)
+if first ~= "/" then
+	http:exit(403)
+	return
+end
+
+-- replace parent dir '..' for safety
+page = string.gsub(page, "%.+", "%.")
+
 local interpret = nil
 if config.load_interpreter then
 	interpret = require "lnet.model_http.interpreter"
