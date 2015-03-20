@@ -1,14 +1,5 @@
 local Server = require "lnet.server"
+local config = require "lnet.model_http.config"
 
--- You can modify parameters as you wish
-local server = Server:new {
-	model = "http",
-	ip = "0.0.0.0",
-	port = 1234,
-	nfd = 100000, -- maximum connections per thread
-	nthread = 4, 
-}
-
-server:listen()
-
-server:run()
+-- You can modify parameters in 'lnet/model_http/config.lua'
+Server.go(config.init)

@@ -50,4 +50,10 @@ function Server:run()
 	end
 end
 
+function Server.go(params)
+	local server = Server:new(params)
+	server:listen()
+	server:run()
+end
+
 return Server

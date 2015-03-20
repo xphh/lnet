@@ -3,7 +3,6 @@
 --
 
 -- global http config
-config = {}
 require "lnet.model_http.config"
 
 local core = require "lnet.core"
