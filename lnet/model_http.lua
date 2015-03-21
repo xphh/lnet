@@ -90,20 +90,6 @@ local function set_http_error(http, code, err)
 	end
 end
 
--- generate http response and send out
-local function http_response(http, sendfunc)
-	http.resp.protocol = http.req.protocol
-	if config.chunked_mode then
-		http.resp.headers["Transfer-Encoding"] = "chunked"
-	end
-	local respbuf, err = proto.generate(http.resp)
-	if respbuf == nil then
-		log_error(err, req, peer)
-	else
-		sendfunc(respbuf)
-	end
-end
-
 -- create a sandbox to do handler
 local function sandbox(handler, http, sendfunc)
 	local env = {http = http}
@@ -112,7 +98,12 @@ local function sandbox(handler, http, sendfunc)
 	-- set http to globals for handler
 	_G.http = http
 	handler()
-	http_response(http, sendfunc)
+	local respbuf, err = proto.generate(http.resp)
+	if respbuf == nil then
+		log_error(err, req, peer)
+	else
+		sendfunc(respbuf)
+	end
 end
 
 --
@@ -149,6 +140,26 @@ function model.input(data, peer, sendfunc)
 		resp = {code = 200, desc = "OK", headers = {["User-Agent"] = config.user_agent}},
 		exit = set_http_error,
 	}
+	-- set default response config
+	http.resp.protocol = http.req.protocol
+	if config.chunked_mode then
+		http.resp.headers["Transfer-Encoding"] = "chunked"
+	end
+	if http.req.protocol == "HTTP/1.0" then
+		if http.req.headers["connection"] == "keep-alive" and config.keep_alive > 0 then
+			http.resp.headers["Connection"] = "keep-alive"
+		else
+			http.resp.headers["Connection"] = "close"
+			parsed = -1 -- let server close the connection
+		end
+	else
+		if http.req.headers["connection"] == "close" or config.keep_alive <= 0 then
+			http.resp.headers["Connection"] = "close"
+			parsed = -1 -- let server close the connection
+		else
+			http.resp.headers["Connection"] = "keep-alive"
+		end
+	end
 	-- handle http
 	local handler, err = gethandler(req.uri)
 	if handler == nil then
