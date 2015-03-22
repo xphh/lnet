@@ -14,12 +14,17 @@ local function datestr()
 	return os.date(config.logs_date_format)
 end
 
+local flush_time = os.clock()
 local function log_access(req, peer)
 	local ua = req.headers["user-agent"] or ""
 	local msg = datestr().." - "..peer.ip..":"..peer.port.." - "..req.headline.." - User-Agent["..ua.."]"
+	local now = os.clock()
 	Sync.enter()
 	config.access_log:write(msg.."\r\n")
-	config.access_log:flush()
+	if now - flush_time > 1 then
+		config.access_log:flush()
+		flush_time = now
+	end
 	Sync.leave()
 end
 
