@@ -170,11 +170,13 @@ static int _send(lua_State *L)
 	return 2;
 }
 
+#define RCV_STACK_SIZE 8192
 static int _recv(lua_State *L)
 {
 	int fd = (int)luaL_checkinteger(L, 1);
 	int size = (int)luaL_checkinteger(L, 2);
-	char *buf = malloc(size);
+	char buf_stack[RCV_STACK_SIZE];
+	char *buf = size > RCV_STACK_SIZE ? malloc(size) : buf_stack;
 	char ip[64] = {0};
 	int port = 0;
 	int ret = socket_recv(fd, buf, size, ip, &port);
@@ -182,7 +184,7 @@ static int _recv(lua_State *L)
 	if (ret < 0) lua_pushstring(L, socket_error()); else lua_pushlstring(L, buf, ret);
 	lua_pushstring(L, ip);
 	lua_pushinteger(L, port);
-	free(buf);
+	if (buf != buf_stack ) free(buf);
 	return 4;
 }
 
