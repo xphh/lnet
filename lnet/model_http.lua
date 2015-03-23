@@ -10,17 +10,24 @@ local Sync = core.sync
 
 local proto = require "lnet.proto_http"
 
+local datestr_cache = os.date(config.logs_date_format)
+local datestr_time = os.clock()
 local function datestr()
-	return os.date(config.logs_date_format)
+	local now = os.clock()
+	if now - datestr_time > 0.1 then
+		datestr_cache = os.date(config.logs_date_format)
+		datestr_time = now
+	end
+	return datestr_cache
 end
 
 local flush_time = os.clock()
 local function log_access(req, peer)
 	local ua = req.headers["user-agent"] or ""
-	local msg = datestr().." - "..peer.ip..":"..peer.port.." - "..req.headline.." - User-Agent["..ua.."]"
+	local msg = datestr().." - "..peer.ip.." - "..req.headline.." - User-Agent["..ua.."]\r\n"
 	local now = os.clock()
 	Sync.enter()
-	config.access_log:write(msg.."\r\n")
+	config.access_log:write(msg)
 	if now - flush_time > 1 then
 		config.access_log:flush()
 		flush_time = now
@@ -29,18 +36,18 @@ local function log_access(req, peer)
 end
 
 local function log_info(info)
-	local msg = datestr().." - "..info
+	local msg = datestr().." - "..info.."\r\n"
 	Sync.enter()
-	config.error_log:write(msg.."\r\n")
+	config.error_log:write(msg)
 	config.error_log:flush()
 	Sync.leave()
 end
 
 local function log_error(err, req, peer)
 	local headline = req.headline or ""
-	local msg = datestr().." - "..peer.ip..":"..peer.port.." - "..headline.." - "..err
+	local msg = datestr().." - "..peer.ip.." - "..headline.." - "..err.."\r\n"
 	Sync.enter()
-	config.error_log:write(msg.."\r\n")
+	config.error_log:write(msg)
 	config.error_log:flush()
 	Sync.leave()
 end

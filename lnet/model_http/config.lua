@@ -9,7 +9,7 @@ config.init = {
 	ip = "0.0.0.0",
 	port = 1234,
 	nfd = 100000, -- maximum connections per thread
-	nthread = 4, 
+	nthread = 1, -- best set to cpu numbers 
 }
 
 -- http server version info and user agent
