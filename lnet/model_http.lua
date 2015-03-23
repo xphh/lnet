@@ -102,6 +102,15 @@ local function set_http_error(http, code, err)
 	end
 end
 
+local function http_response(http, sendfunc)
+        local respbuf, err = proto.generate(http.resp)
+        if respbuf == nil then
+                log_error(err, req, peer)
+        else
+                sendfunc(respbuf)
+        end
+end
+
 -- create a sandbox to do handler
 local function sandbox(handler, http, sendfunc)
 	local env = {http = http}
@@ -110,12 +119,7 @@ local function sandbox(handler, http, sendfunc)
 	-- set http to globals for handler
 	_G.http = http
 	handler()
-	local respbuf, err = proto.generate(http.resp)
-	if respbuf == nil then
-		log_error(err, req, peer)
-	else
-		sendfunc(respbuf)
-	end
+	http_response(http, sendfunc)
 end
 
 --
@@ -149,7 +153,7 @@ function model.input(data, peer, sendfunc)
 	local http = {
 		peer = peer,
 		req = req,
-		resp = {code = 200, desc = "OK", headers = {["User-Agent"] = config.user_agent}},
+		resp = {code = "200", desc = "OK", headers = {["User-Agent"] = config.user_agent}},
 		exit = set_http_error,
 	}
 	-- set default response config
