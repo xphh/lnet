@@ -78,9 +78,10 @@ function CoSocket:send(data, ip, port)
 	end
 end
 
--- if size == nil, recv until disconnected
-function CoSocket:recv(size)
-	size = size or 0
+-- if cond == nil, recv until disconnected
+-- if cond is number, recv until cond bytes are received
+-- if cond is string, recv until cond is received
+function CoSocket:recv(cond)
 	local total_data = ""
 	local total_len = 0
 	local peer_ip = ""
@@ -92,14 +93,18 @@ function CoSocket:recv(size)
 			break
 		end
 		local rcvlen, data
-		rcvlen, data, peer_ip, peer_port = Socket.recv(self, math.max(size, 1024))
+		rcvlen, data, peer_ip, peer_port = Socket.recv(self, 8000)
 		if rcvlen < 0 then
 			break
 		end
 		total_len = total_len + rcvlen
 		total_data = total_data..data
-		if size > 0 and total_len >= size then
-			break
+		if cond ~= nil then
+			if type(cond) == "number" and total_len >= cond then
+				break
+			elseif string.find(total_data, cond) ~= nil then
+				break
+			end
 		end
 	end
 	return total_len, total_data, peer_ip, peer_port
