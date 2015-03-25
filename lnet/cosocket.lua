@@ -23,7 +23,7 @@ function CoSocket:setevent(bread, bwrite)
 	local co = coroutine.running()
 	COMAP[self.fd] = co
 	table.insert(FDLIST, {fd = self.fd, t = os.clock(), co = co})
-	p:control(self.fd, bread, bwrite, true)
+	p:control(self.fd, bread, bwrite, false)
 end
 
 function CoSocket:setread()
@@ -118,7 +118,10 @@ end
 -- get coroutine by fd, and delete it
 function CoSocket.getco(fd)
 	local co = COMAP[fd]
-	COMAP[fd] = nil
+	if co ~= nil then
+		COMAP[fd] = nil
+		p:control(fd, false, false, true)
+	end
 	return co
 end
 
