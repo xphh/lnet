@@ -93,7 +93,7 @@ local function parse_chunked_content(data, begin)
 			return 0
 		end
 		line, begin = getline(data, begin)
-		local length = tonumber(line)
+		local length = tonumber(line, 16) -- length in HEX
 		if length == nil or length < 0 then
 			return -1, "parse chunk length error"
 		elseif length == 0 then
@@ -185,7 +185,7 @@ local function http_generate(http)
 	buf = buf.."\r\n"
 	if http.headers["Transfer-Encoding"] == "chunked" then
 		if http.content ~= nil then
-			buf = buf..#http.content.."\r\n"
+			buf = buf..string.format("%x", #http.content).."\r\n"
 			buf = buf..http.content.."\r\n"
 		end
 		buf = buf.."0\r\n"
