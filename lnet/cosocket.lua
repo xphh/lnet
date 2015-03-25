@@ -78,7 +78,7 @@ function CoSocket:send(data, ip, port)
 	end
 end
 
--- if cond == nil, recv until disconnected
+-- if cond == nil, recv until disconnected (if udp, recv one pack)
 -- if cond is number, recv until cond bytes are received
 -- if cond is string, recv until cond is received
 function CoSocket:recv(cond)
@@ -103,6 +103,10 @@ function CoSocket:recv(cond)
 			if type(cond) == "number" and total_len >= cond then
 				break
 			elseif string.find(total_data, cond) ~= nil then
+				break
+			end
+		else
+			if self.udp then
 				break
 			end
 		end

@@ -9,10 +9,11 @@ local core = lnet_openfunc()
 
 local Socket = {
 	fd = -1,
+	udp = false,
 }
 
-function Socket:new(fd)
-	local o = {fd = fd}
+function Socket:new(fd, udp)
+	local o = {fd = fd, udp = udp}
 	setmetatable(o, self)
 	self.__index = self
 	return o
@@ -28,7 +29,7 @@ function Socket:tcp(ip, port)
 	if fd == -1 then
 		return nil, err
 	end
-	return self:new(fd)
+	return self:new(fd, false)
 end
 
 function Socket:udp(ip, port)
@@ -41,7 +42,7 @@ function Socket:udp(ip, port)
 	if fd == -1 then
 		return nil, err
 	end
-	return self:new(fd)
+	return self:new(fd, true)
 end
 
 function Socket:close()
