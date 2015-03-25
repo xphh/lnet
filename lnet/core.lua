@@ -28,7 +28,7 @@ function Socket:tcp(ip, port)
 	if fd == -1 then
 		return nil, err
 	end
-	return Socket:new(fd)
+	return self:new(fd)
 end
 
 function Socket:udp(ip, port)
@@ -41,7 +41,7 @@ function Socket:udp(ip, port)
 	if fd == -1 then
 		return nil, err
 	end
-	return Socket:new(fd)
+	return self:new(fd)
 end
 
 function Socket:close()
@@ -89,7 +89,7 @@ end
 
 function Poll:create(nfd)
 	local poll = core.create_poll(nfd)
-	return Poll:new(poll)
+	return self:new(poll)
 end
 
 function Poll:destroy(id)
