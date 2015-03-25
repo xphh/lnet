@@ -75,19 +75,12 @@ end
 local function parse_headers(data, begin)
 	local headers = {}
 	while true do
-		line, begin = getline(data, begin)
-		if line == nil then
-			return 0
-		end
-		if #line > 0 then
-			local _, _, header, info = string.find(line, "(.+)%s*:%s*(.*)")
-			if header == nil then
-				return -1, "header["..line.."] parse fail"
-			end
-			headers[string.lower(header)] = info
-		else
+		local _, ep, header, info = string.find(data, "(.+)%s*:%s*(.*)\r\n", begin)
+		if header == nil then
 			break
 		end
+		begin = ep + 1
+		headers[string.lower(header)] = info
 	end
 	return begin, nil, headers
 end
