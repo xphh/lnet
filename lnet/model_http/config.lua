@@ -72,6 +72,10 @@ config.uri_mapping = {
 		handler = "test.lua"
 	},
 	
+	["^/test_socket"] = {
+		handler = "test_socket.lua"
+	},
+	
 }
 
 -- import mime types

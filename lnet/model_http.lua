@@ -103,23 +103,26 @@ local function set_http_error(http, code, err)
 end
 
 local function http_response(http, sendfunc)
-        local respbuf, err = proto.generate(http.resp)
-        if respbuf == nil then
-                log_error(err, req, peer)
-        else
-                sendfunc(respbuf)
-        end
+	local respbuf, err = proto.generate(http.resp)
+	if respbuf == nil then
+		log_error(err, http.req, http.peer)
+	else
+		sendfunc(respbuf)
+	end
 end
 
 -- create a sandbox to do handler
 local function sandbox(handler, http, sendfunc)
-	local env = {http = http}
+	local env = {}
 	setmetatable(env, {__index = _G})
 	setfenv(1, env)
 	-- set http to globals for handler
+	-- we must save old global http before set!
+	local oldhttp = _G.http
 	_G.http = http
 	handler()
 	http_response(http, sendfunc)
+	_G.http = oldhttp
 end
 
 --
