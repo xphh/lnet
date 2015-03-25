@@ -1,3 +1,20 @@
+# lnet update 2015-03-25
+Now cosocket supported!
+
+What is cosocket? 'cosocket' is a socket API wapper for http handlers in lnet httpserver. It provides tcp/udp block operations but actually non-block in lnet httpserver thread. Yes, the name 'cosocket' means 'coroutine socket'. We yield out of the running corouine while doing some block operation (like connect and etc.), and resume back when the socket is ready.
+
+To use cosocket, you have to require 'lnet.cosocket' explicitly in your lua code, and it returns an object:
+
+local Socket = require "lnet.cosocket"
+- tcp = Socket:tcp(ip, port) -- create a tcp socket object
+- udp = Socket:udp(ip, port) -- create a udp socket object
+- ret, err = Socket:connect(ip, port)
+- sndlen, err = Socket:send(data, ip, port)
+- rcvlen, data, ip, port = Socket:recv(condition)
+- Socket.settimeout(sec)
+
+To learn more, see 'lnet/cosocket.lua' and 'lnet/model_http/handler/test_socket.lua'.
+
 # lnet update 2015-03-18
 Now webpage supported!
 
