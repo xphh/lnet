@@ -9,6 +9,7 @@ local tcp = Sock:tcp()
 local ret, err = tcp:connect("127.0.0.1", 1234)
 if ret < 0 then
 	http.resp.content = "connect fail: "..err
+	tcp:close()
 	return
 end
 
@@ -16,6 +17,7 @@ end
 local sndlen, err = tcp:send("GET / HTTP/1.0\r\n\r\n")
 if sndlen < 0 then
 	http.resp.content = "send fail: "..err
+	tcp:close()
 	return
 end
 
@@ -23,8 +25,11 @@ end
 local rcvlen, data = tcp:recv("\r\n\r\n")
 if rcvlen < 0 then
 	http.resp.content = "recv fail: "..data
+	tcp:close()
 	return
 end
 
 -- show data
 http.resp.content = data
+
+tcp:close()
