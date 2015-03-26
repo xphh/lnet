@@ -35,8 +35,8 @@ end
 config.output_error = true
 
 -- logs parameters
--- make sure the directory exist or will not take effect
 config.logs_dir = "lnet/model_http/logs"
+os.execute("mkdir -p "..config.logs_dir)
 config.logs_date_format = "%Y-%m-%d %H:%M:%S"
 config.access_log = io.open(config.logs_dir.."/access.log", "a")
 config.error_log = io.open(config.logs_dir.."/error.log", "a")
@@ -80,6 +80,9 @@ config.uri_mapping = {
 
 -- import mime types
 require "lnet.model_http.mime"
+
+-- custom global config here
+--
 
 -------------
 return config
