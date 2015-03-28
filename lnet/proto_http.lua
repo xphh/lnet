@@ -75,7 +75,7 @@ end
 local function parse_headers(data, begin)
 	local headers = {}
 	while true do
-		local _, ep, header, info = string.find(data, "(.+)%s*:%s*(.*)\r\n", begin)
+		local _, ep, header, info = string.find(data, "([^\n]+)%s*:%s*([^\n]*)\r\n", begin)
 		if header == nil then
 			break
 		end
