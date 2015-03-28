@@ -1,7 +1,7 @@
 local Server = require "lnet.server"
 
--- server init parameters
-local params = {
+-- one http server
+Server:new {
 	model = "http.default", -- a http server, and configured by 'lnet/model_http/config/default.lua'
 	ip = "0.0.0.0",
 	port = 80,
@@ -9,4 +9,14 @@ local params = {
 	nthread = 1, -- best set to cpu numbers 
 }
 
-Server.go(params)
+-- another http server
+Server:new {
+	model = "http.default",
+	ip = "0.0.0.0",
+	port = 8080,
+	nfd = 10000,
+	nthread = 2,
+}
+
+-- run all servers
+Server.go()

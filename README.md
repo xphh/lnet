@@ -1,3 +1,6 @@
+# lnet update 2015-03-28
+Now multi-httpserver supported! See 'httpserver.lua'.
+
 # lnet update 2015-03-25
 Now cosocket supported!
 
