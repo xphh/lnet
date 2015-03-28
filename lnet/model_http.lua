@@ -1,9 +1,12 @@
 --
 -- Written by xphh 2015 with 'MIT License'
 --
+local modelctx = _G["_MODELCTX"]
+assert(modelctx ~= nil, "modelctx nil")
+local cfgfile = "lnet.model_http.config."..modelctx
 
 -- global http config
-require "lnet.model_http.config"
+require(cfgfile)
 
 local core = require "lnet.core"
 local Sync = core.sync

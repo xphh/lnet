@@ -7,9 +7,17 @@ local Poll = core.poll
 
 local tid = _G["_THREADID"]
 local p = Poll:new(_G["_POLL"])
-local modelname = "lnet.model_".._G["_CTXSTRING"]
+local ctxstring = _G["_CTXSTRING"]
 
-local model = require(modelname)
+-- parse modeltype & modelctx
+_MODELTYPE = ctxstring
+_MODELCTX = nil
+local pos = string.find(ctxstring, "%.")
+if pos ~= nil then
+	_MODELTYPE = string.sub(ctxstring, 1, pos - 1)
+	_MODELCTX = string.sub(ctxstring, pos + 1)
+end
+local model = require("lnet.model_".._MODELTYPE)
 
 local CLIENTS = {}
 local Client = {}

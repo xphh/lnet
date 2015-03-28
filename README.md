@@ -62,7 +62,7 @@ How to make, configure, and use 'lnet' httpserver:
 
 1. Make sure you have already installed 'lua' or 'luajit'.
 2. Make C library 'lnet/core.dll' (if Linux, run 'make').
-3. Modify 'lnet/model_http/config.lua' as you like. How to configue? See annotations in config.lua, and to learn it yourself.
+3. Modify 'lnet/model_http/config/default.lua' as you like. How to configue? See annotations in config file, and to learn it yourself.
 4. Modify 'httpserver.lua', set server parameters.
 5. Run 'httpserver.lua'.
 

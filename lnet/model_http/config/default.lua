@@ -3,15 +3,6 @@
 --
 config = {}
 
--- http server init parameters
-config.init = {
-	model = "http",
-	ip = "0.0.0.0",
-	port = 1234,
-	nfd = 100000, -- maximum connections per thread
-	nthread = 1, -- best set to cpu numbers 
-}
-
 -- http server version info and user agent
 config.version_info = "lnet-0.1.0"
 config.user_agent = "Lua httpserver "..config.version_info
