@@ -132,7 +132,7 @@ end
 -- chunk start here
 --
 sethandler()
-log_info("worker init")
+log_info("["..modelctx.."] worker init")
 if not config.code_cache then
 	log_info("warning: code cache is off")
 end
