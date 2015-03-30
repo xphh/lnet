@@ -130,13 +130,34 @@ function CoSocket.settimeout(to)
 	TIMEOUT = to
 end
 
+-- save errhandlers
+local ERRHANDLERS = {}
+
+-- resume cosocket's coroutine
+function CoSocket.coresume(co)
+	local res, err = coroutine.resume(co)
+	if not res then
+		ERRHANDLERS[co](err)
+	end
+	if coroutine.status(co) ~= "suspended" then
+		ERRHANDLERS[co] = nil
+	end
+end
+
+-- create a coroutine for cosocket!
+function CoSocket.coroutine(func, errhandler)
+	local co = coroutine.create(func)
+	ERRHANDLERS[co] = errhandler
+	CoSocket.coresume(co)
+end
+
 -- get coroutine by fd, and resume co
 -- if co exists, return true, or false
 function CoSocket.resume(fd)
 	local co = COMAP[fd]
 	if co ~= nil then
 		CoSocket.clear(fd)
-		coroutine.resume(co)
+		CoSocket.coresume(co)
 		return true
 	else
 		return false

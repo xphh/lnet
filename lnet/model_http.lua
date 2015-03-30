@@ -137,6 +137,8 @@ if not config.code_cache then
 	log_info("warning: code cache is off")
 end
 
+local CoSocket = require "lnet.cosocket"
+
 local model = {
 	-- session timeout time (sec)
 	timeout = config.keep_alive or 0,
@@ -189,15 +191,14 @@ function model.input(data, peer, sendfunc)
 		set_http_error(http, 500, err)
 		http_response(http, sendfunc)
 	else
-		-- create coroutine first
-		local safectx = function () coroutine.wrap(sandbox)(handler, http, sendfunc) end
-		-- then use pcall
-		local res, err = pcall(safectx)
-		if not res then
+		-- create coroutine and run
+		local func = function () sandbox(handler, http, sendfunc) end
+		local errhandler = function (err)
 			log_error(err, req, peer)
 			set_http_error(http, 500, err)
 			http_response(http, sendfunc)
 		end
+		CoSocket.coroutine(func, errhandler)
 	end
 	return parsed
 end
