@@ -34,6 +34,17 @@ function CoSocket:setwrite()
 	self:setevent(false, true)
 end
 
+function CoSocket.clear(fd)
+	p:control(fd, false, false, true)
+	COMAP[fd] = nil
+	for i,v in ipairs(FDLIST) do
+		if v.fd == fd then
+			table.remove(FDLIST, i)
+			break
+		end
+	end
+end
+
 -- override wait/connect/send/recv
 
 function CoSocket:wait()
@@ -119,14 +130,17 @@ function CoSocket.settimeout(to)
 	TIMEOUT = to
 end
 
--- get coroutine by fd, and delete it
-function CoSocket.getco(fd)
+-- get coroutine by fd, and resume co
+-- if co exists, return true, or false
+function CoSocket.resume(fd)
 	local co = COMAP[fd]
 	if co ~= nil then
-		COMAP[fd] = nil
-		p:control(fd, false, false, true)
+		CoSocket.clear(fd)
+		coroutine.resume(co)
+		return true
+	else
+		return false
 	end
-	return co
 end
 
 -- return next timeout (sec)
@@ -135,8 +149,7 @@ function CoSocket.getnext()
 	while FDLIST[1] ~=nil do
 		local to = FDLIST[1].t + TIMEOUT
 		if now >= to then
-			coroutine.resume(FDLIST[1].co)
-			table.remove(FDLIST, 1)
+			CoSocket.resume(FDLIST[1].fd)
 		else
 			return to - now
 		end

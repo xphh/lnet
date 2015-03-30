@@ -140,11 +140,9 @@ while true do
 	if n > 0 then
 		for i = 1, n do
 			local fd, bread, bwrite = p:event(i)
-			local co = CoSocket.getco(fd)
-			if co == nil then
+			local iscosock = CoSocket.resume(fd)
+			if not iscosock then
 				handle_event(fd, bread, bwrite)
-			else
-				coroutine.resume(co)
 			end
 		end
 	end
