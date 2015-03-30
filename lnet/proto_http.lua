@@ -36,7 +36,7 @@ local function parse_headline(data, begin)
 		return -1, "headline["..line.."] parse fail"
 	end
 	if protocol ~= "HTTP/1.0" and protocol ~= "HTTP/1.1" then
-		return -1, "http version "..protocol.." unsupported"
+		return -1, "http version '"..protocol.."' unsupported"
 	end
 	return begin, nil, line, method, uri, protocol
 end
@@ -119,19 +119,20 @@ end
 -- parsed =  0 for 'incomplete'
 -- parsed = -1 for 'error'
 -- parsed >  0 for 'the length of data parsed'
-local function http_parse(data, full)
+local function http_parse(data, bresp)
 	local req = {}
 	local begin = 1
-	-- parse request headline
-	begin, err, req.headline, req.method, req.uri, req.protocol = parse_headline(data, begin)
-	if begin < 0 then
-		return -1, err, req
-	elseif begin == 0 then
-		return 0
-	end
-	req.uri_path, req.uri_args = parse_uri(req.uri)
-	-- if full, parse response status line
-	if full ~= nil then
+	if not bresp then
+		-- parse request headline
+		begin, err, req.headline, req.method, req.uri, req.protocol = parse_headline(data, begin)
+		if begin < 0 then
+			return -1, err, req
+		elseif begin == 0 then
+			return 0
+		end
+		req.uri_path, req.uri_args = parse_uri(req.uri)
+	else
+		-- parse response status line
 		begin, err, req.statusline, req.protocol, req.code, req.desc = parse_statusline(data, begin)
 		if begin < 0 then
 			return -1, err, req
@@ -182,23 +183,27 @@ local function http_generate(http)
 	else
 		return nil, "unrecognized http table"
 	end
-	if http.headers["Transfer-Encoding"] == nil then
-		local clen = http.content and #http.content or 0
-		http.headers["Content-Length"] = clen
-	end
-	for k in pairs(http.headers) do
-		buf = buf..k..": "..http.headers[k].."\r\n"
+	if http.headers ~= nil then
+		if http.headers["Transfer-Encoding"] == nil then
+			local clen = http.content and #http.content or 0
+			http.headers["Content-Length"] = clen
+		end
+		for k in pairs(http.headers) do
+			buf = buf..k..": "..http.headers[k].."\r\n"
+		end
 	end
 	buf = buf.."\r\n"
-	if http.headers["Transfer-Encoding"] == "chunked" then
-		if http.content ~= nil then
-			buf = buf..string.format("%x", #http.content).."\r\n"
-			buf = buf..http.content.."\r\n"
-		end
-		buf = buf.."0\r\n"
-	else
-		if http.content ~= nil then
-			buf = buf..http.content
+	if http.headers ~= nil then
+		if http.headers["Transfer-Encoding"] == "chunked" then
+			if http.content ~= nil then
+				buf = buf..string.format("%x", #http.content).."\r\n"
+				buf = buf..http.content.."\r\n"
+			end
+			buf = buf.."0\r\n"
+		else
+			if http.content ~= nil then
+				buf = buf..http.content
+			end
 		end
 	end
 	return buf
