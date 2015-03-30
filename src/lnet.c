@@ -5,6 +5,8 @@
 #define _CRT_SECURE_NO_WARNINGS
 #define LUA_BUILD_AS_DLL
 #define LUA_LIB
+#else
+#include <netdb.h>
 #endif
 
 #include "lua.h"
