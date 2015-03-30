@@ -245,12 +245,12 @@ static int _control_poll(lua_State *L)
 {
 	poll_handle p = lua_touserdata(L, 1);
 	int fd = (int)luaL_checkinteger(L, 2);
-	const char *mode = luaL_checkstring(L, 3);
+	int mode = (int)luaL_checkinteger(L, 3);
 	event_t ev;
 	luaL_argcheck(L, check_poll(p), 1, "'poll' expected");
 	ev.fd = fd;
 	ev.flag = 0;
-	if (mode[0] == 'a' || mode[0] == 'm')
+	if (mode == POLL_ADD || mode == POLL_MOD)
 	{
 		int bread = 0;
 		int bwrite = 0;

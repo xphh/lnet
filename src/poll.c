@@ -79,11 +79,11 @@ C_API void poll_destroy(poll_handle p)
 	free(p);
 }
 
-C_API int poll_control(poll_handle p, const char *mode, const event_t *ev)
+C_API int poll_control(poll_handle p, int mode, const event_t *ev)
 {
 	int ret;
 	pthread_mutex_lock(&p->mtx);
-	if (mode[0] == 'd')
+	if (mode == POLL_DEL)
 	{
 		ret = epoll_ctl(p->epfd, EPOLL_CTL_DEL, ev->fd, NULL);
 	}
@@ -93,7 +93,7 @@ C_API int poll_control(poll_handle p, const char *mode, const event_t *ev)
 		epev.data.fd = ev->fd;
 		if (ev->flag & READABLE) epev.events |= EPOLLIN;
 		if (ev->flag & WRITABLE) epev.events |= EPOLLOUT;
-		if (mode[0] == 'a')
+		if (mode == POLL_ADD)
 		{
 			ret = epoll_ctl(p->epfd, EPOLL_CTL_ADD, ev->fd, &epev);
 		}

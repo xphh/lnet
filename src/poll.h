@@ -19,10 +19,14 @@ typedef struct
 	int flag;
 } event_t;
 
+#define POLL_DEL 0
+#define POLL_ADD 1
+#define POLL_MOD 2
+
 C_API int check_poll(poll_handle);
 C_API poll_handle poll_create(int size);
 C_API void poll_destroy(poll_handle);
-C_API int poll_control(poll_handle, const char *mode, const event_t *ev);
+C_API int poll_control(poll_handle, int mode, const event_t *ev);
 C_API int poll_do(poll_handle, int timeout);
 C_API void poll_event(poll_handle, int id, event_t *ev);
 

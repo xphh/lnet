@@ -177,7 +177,7 @@ C_API int poll_control_inthread(poll_handle p, const event_t *ev)
 	return 0;
 }
 
-C_API int poll_control(poll_handle p, const char *mode, const event_t *ev)
+C_API int poll_control(poll_handle p, int mode, const event_t *ev)
 {
 	if (GetCurrentThreadId() == p->tid)
 	{

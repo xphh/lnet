@@ -44,7 +44,7 @@ function Server:accept()
 	if fd ~= -1 then
 		self.id = self.id + 1
 		if self.id > self.params.nthread then self.id = 1 end
-		self.parr[self.id]:control(fd, "a", true, false)
+		self.parr[self.id]:control(fd, 1, true, false)
 	end
 end
 
@@ -63,7 +63,7 @@ function Server.go()
 	for k in pairs(SERVERS) do
 		local server = SERVERS[k]
 		server:listen()
-		p:control(server.listener.fd, "a", true, false)
+		p:control(server.listener.fd, 1, true, false)
 	end
 	while true do
 		local n = p:poll(-1)

@@ -59,10 +59,10 @@ function Client:send(data)
 	local sndlen = self.tcp:send(self.sndbuf)
 	if sndlen == #self.sndbuf then
 		self.sndbuf = ""
-		p:control(self.tcp.fd, "m", true, false)
+		p:control(self.tcp.fd, 2, true, false)
 	elseif 0 <= sndlen and sndlen < #self.sndbuf then
 		self.sndbuf = string.sub(self.sndbuf, sndlen + 1)
-		p:control(self.tcp.fd, "m", true, true)
+		p:control(self.tcp.fd, 2, true, true)
 	elseif sndlen < 0 then
 		return false
 	end
@@ -70,7 +70,7 @@ function Client:send(data)
 end
 
 function Client:close(data)
-	p:control(self.tcp.fd, "d")
+	p:control(self.tcp.fd, 0)
 	self.tcp:close()
 end
 
