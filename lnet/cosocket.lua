@@ -23,7 +23,7 @@ function CoSocket:setevent(bread, bwrite)
 	local co = coroutine.running()
 	COMAP[self.fd] = co
 	table.insert(FDLIST, {fd = self.fd, t = os.clock(), co = co})
-	p:control(self.fd, bread, bwrite, false)
+	p:control(self.fd, "a", bread, bwrite)
 end
 
 function CoSocket:setread()
@@ -35,7 +35,7 @@ function CoSocket:setwrite()
 end
 
 function CoSocket.clear(fd)
-	p:control(fd, false, false, true)
+	p:control(fd, "d")
 	COMAP[fd] = nil
 	for i,v in ipairs(FDLIST) do
 		if v.fd == fd then

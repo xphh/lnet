@@ -107,6 +107,7 @@ struct poll_t
 	event_t *evs;
 	int n_out;
 	event_t *evs_out;
+	DWORD tid;
 };
 
 C_API int check_poll(poll_handle p)
@@ -176,9 +177,9 @@ C_API int poll_control_inthread(poll_handle p, const event_t *ev)
 	return 0;
 }
 
-C_API int poll_control(poll_handle p, const event_t *ev, int inthread)
+C_API int poll_control(poll_handle p, const char *mode, const event_t *ev)
 {
-	if (inthread)
+	if (GetCurrentThreadId() == p->tid)
 	{
 		poll_control_inthread(p, ev);
 	}
@@ -202,6 +203,7 @@ static void poll_mfd_callback(void *mp)
 
 C_API int poll_do(poll_handle p, int timeout)
 {
+	p->tid = GetCurrentThreadId();
 	p->n_out = i_select(p->evs, p->evs_out, p->n, timeout, p->mfd, poll_mfd_callback, p);
 	return p->n_out;
 }

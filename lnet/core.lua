@@ -97,8 +97,8 @@ function Poll:destroy(id)
 	return core.destroy_poll(self.p)
 end
 
-function Poll:control(fd, bread, bwrite, inthread)
-	return core.control_poll(self.p, fd, bread, bwrite, inthread)
+function Poll:control(fd, mode, bread, bwrite)
+	return core.control_poll(self.p, fd, mode, bread, bwrite)
 end
 
 function Poll:poll(timeout)

@@ -79,11 +79,11 @@ C_API void poll_destroy(poll_handle p)
 	free(p);
 }
 
-C_API int poll_control(poll_handle p, const event_t *ev, int inthread)
+C_API int poll_control(poll_handle p, const char *mode, const event_t *ev)
 {
 	int ret;
 	pthread_mutex_lock(&p->mtx);
-	if (ev->flag == 0)
+	if (mode[0] == 'd')
 	{
 		ret = epoll_ctl(p->epfd, EPOLL_CTL_DEL, ev->fd, NULL);
 	}
@@ -93,14 +93,13 @@ C_API int poll_control(poll_handle p, const event_t *ev, int inthread)
 		epev.data.fd = ev->fd;
 		if (ev->flag & READABLE) epev.events |= EPOLLIN;
 		if (ev->flag & WRITABLE) epev.events |= EPOLLOUT;
-		// "inthread" stand for "not first time"
-		if (inthread)
+		if (mode[0] == 'a')
 		{
-			ret = epoll_ctl(p->epfd, EPOLL_CTL_MOD, ev->fd, &epev);
+			ret = epoll_ctl(p->epfd, EPOLL_CTL_ADD, ev->fd, &epev);
 		}
 		else
 		{
-			ret = epoll_ctl(p->epfd, EPOLL_CTL_ADD, ev->fd, &epev);
+			ret = epoll_ctl(p->epfd, EPOLL_CTL_MOD, ev->fd, &epev);
 		}
 	}
 	pthread_mutex_unlock(&p->mtx);

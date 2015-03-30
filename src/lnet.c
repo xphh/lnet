@@ -3,6 +3,7 @@
  */
 #ifdef WIN32
 #define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_DEPRECATE
 #define LUA_BUILD_AS_DLL
 #define LUA_LIB
 #else
@@ -244,16 +245,21 @@ static int _control_poll(lua_State *L)
 {
 	poll_handle p = lua_touserdata(L, 1);
 	int fd = (int)luaL_checkinteger(L, 2);
-	int bread = lua_toboolean(L, 3);
-	int bwrite = lua_toboolean(L, 4);
-	int inthread = lua_toboolean(L, 5);
+	const char *mode = luaL_checkstring(L, 3);
 	event_t ev;
 	luaL_argcheck(L, check_poll(p), 1, "'poll' expected");
 	ev.fd = fd;
 	ev.flag = 0;
-	if (bread) ev.flag |= READABLE;
-	if (bwrite) ev.flag |= WRITABLE;
-	poll_control(p, &ev, inthread);
+	if (mode[0] == 'a' || mode[0] == 'm')
+	{
+		int bread = 0;
+		int bwrite = 0;
+		bread = lua_toboolean(L, 4);
+		bwrite = lua_toboolean(L, 5);
+		if (bread) ev.flag |= READABLE;
+		if (bwrite) ev.flag |= WRITABLE;
+	}
+	poll_control(p, mode, &ev);
 	return 0;
 }
 
