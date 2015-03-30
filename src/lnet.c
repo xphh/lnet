@@ -2,6 +2,7 @@
  *  Written by xphh 2015 with 'MIT License'
  */
 #ifdef WIN32
+#define _CRT_SECURE_NO_WARNINGS
 #define LUA_BUILD_AS_DLL
 #define LUA_LIB
 #endif
@@ -203,6 +204,21 @@ static int _wait(lua_State *L)
 	return 2;
 }
 
+static int _gethostbyname(lua_State *L)
+{
+	const char *name = luaL_checkstring(L, 1);
+	struct hostent *answer = gethostbyname(name);
+	if (answer)
+	{
+		char ipstr[64] = {0};
+		unsigned char *ip = (unsigned char *)answer->h_addr_list[0];
+		sprintf(ipstr, "%d.%d.%d.%d", ip[0], ip[1], ip[2], ip[3]);
+		lua_pushstring(L, ipstr);
+		return 1;
+	}
+	return 0;
+}
+
 /************************************************************************/
 /* poll for lua                                                         */
 /************************************************************************/
@@ -333,6 +349,7 @@ static luaL_reg lnetlib[] = {
 	{"send", _send},
 	{"recv", _recv},
 	{"wait", _wait},
+	{"gethostbyname", _gethostbyname},
 	{"create_poll", _create_poll},
 	{"destroy_poll", _destroy_poll},
 	{"control_poll", _control_poll},

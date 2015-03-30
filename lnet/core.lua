@@ -120,4 +120,5 @@ return {
 		enter = core.enter_sync,
 		leave = core.leave_sync,
 	},
+	gethostbyname = core.gethostbyname,
 }
